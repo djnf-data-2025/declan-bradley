@@ -130,6 +130,8 @@ railstate_table_connections$tCars |>
   filter(hazmats != "null") |>
   colnames()
 
+
+# start hazard analysis here
 cars_w_hazmat_classes <- railstate_table_connections$tHazmat |>
   filter(car_hazmat_info_str != "[]") %>%
   filter(car_hazmat_info_str != "null") %>%
@@ -150,18 +152,21 @@ cars_w_hazmat_classes <- cars_w_hazmat_classes |>
 # presuming 1 means true
 cars_w_hazmat_classes <- cars_w_hazmat_classes |>
   mutate(key_car = case_when(
-    (placardType %in% c("UN1005", "UN3318")) && (type == "Tank Car") && (isLoaded == 1) ~ TRUE,
+    (placardType %in% c("UN1005", "UN3318")) && (type == "Tank Car") && (is.na(isLoaded) || (isLoaded == 1)) ~ TRUE,
     TRUE ~ FALSE
   )) |>
   mutate(hazard_shipment = case_when(
-    (placardType %in% c("UN1005", "UN3318")) || (hazmatClass %in% c(2.1, 1.1, 1.2)) ~ TRUE,
+    ((placardType %in% c("UN1005", "UN3318")) || (hazmatClass %in% c(2.1, 1.1, 1.2))) && (is.na(isLoaded) || (isLoaded == 1)) ~ TRUE,
     TRUE ~ FALSE
   ))
 
 cars_w_hazmat_classes |>
   select(trainId, key_car, hazard_shipment) |>
-  collect()
-  
+  filter(key_car) |>
+  group_by(trainId) |>
+  summarize(num_key_cars = length(key_car))
 
-group_by(trainId) |>
-  summarize(key_car = length(which(key_car)))
+cars_w_hazmat_classes |>
+  filter(!key_car) |>
+  head(100)
+  
