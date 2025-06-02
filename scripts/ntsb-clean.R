@@ -46,6 +46,8 @@ df$Time_Of_Day <- df$WhatHappened %>%
   str_to_upper() %>% 
   parse_date_time(orders="%-I:%M %p")
 
+write.csv(df, "data/ntsb-full_clean.csv", row.names=FALSE)
+
 hours_table <- df$Time_Of_Day %>%
   hour() %>%
   value_counts() %>%

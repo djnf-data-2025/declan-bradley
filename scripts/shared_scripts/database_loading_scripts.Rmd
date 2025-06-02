@@ -1,0 +1,262 @@
+---
+title: "railstate_database_loading_scripts"
+output: html_document
+date: "2025-02-14"
+---
+
+```{r}
+
+##################
+# Load libraries #
+##################
+
+# For general data science goodness
+library(tidyverse)
+
+# A generic library for database connections
+# https://dbi.r-dbi.org/
+library(DBI)
+
+# A specific package for the flavor of database you are connecting.  
+# For MYSql, the package is library(RMySQL)
+# For Postgres, the package is library(RPostgreSQL)
+# I'm using a SQLite database for this example
+# https://rsqlite.r-dbi.org/
+library(RSQLite)
+
+# For R to SQL translation
+library(dbplyr)
+library(janitor)
+library(googlesheets4)
+library(readxl)
+library(here)
+library(leaflet)
+library(googledrive)
+
+
+######################
+# Load Lookup Tables #
+######################
+placards_crosswalk <- read_csv(here("data/other_data/placards_crosswalk_cfr_census_railstate.csv")) %>%
+  filter(in_railstate==TRUE) %>%
+  select(placard_type, hazmat_class_railstate, hazmat_name_cfr) 
+
+#########################
+# Load Helper Functions #
+#########################
+
+source(here("scripts/shared_scripts/helper_functions.R"))
+
+```
+
+## Create a database connection
+
+```{r}
+
+###
+# Download the data as a zip file
+###
+# You'll need permission to download this file
+drive_download("https://drive.google.com/file/d/1iXkpqZj7OP6e0wAE521ME6nSgpd3F2HX/view?usp=drive_link", path = here("data/railstate_databases/merged_databases/all_sensors/merged_databases.db.zip"), overwrite = TRUE)
+
+###
+# Unzip the data
+###
+
+unzip(here("data/railstate_databases/merged_databases/all_sensors/merged_databases.db.zip"), exdir = here("data/railstate_databases/merged_databases/all_sensors/"))
+
+# It will unzip as merged_database_2025_03_11.db. Don't change the name.
+
+###
+# Create a database connection
+###
+
+# You'll first need to create a database connection.  
+# Store the connection as 'conn' so you can use it later.
+# Use the function create_railstate_db_connection to connect. The function create_railstate_db_connection has 3 arguments:
+# db_type: The type of database you want to connect to.  Options are "merged" or "individual_sensor". Use merged
+# merged_geography: If you are connecting to a merged database, you'll need to specify which one.  Options are "all_sensors", "us", or "canada". Use all_sensors
+# sensor_number: If you are connecting to an individual sensor, specify which one. Ignore this
+
+# Example: Connect to the merged database for all sensors (biggest database)
+conn <- create_railstate_db_connection(db_type="merged", merged_geography="all_sensors", sensor_number=NULL)
+conn
+# Example: Connect to the merged database for only US Sensors
+#conn <- create_railstate_db_connection(db_type="merged", merged_geography="us", sensor_number=NULL)
+
+# Example: Connect to the merged database for only Canada Sensors
+#conn <- create_railstate_db_connection(db_type="merged", merged_geography="canada", sensor_number=NULL)
+
+# Example: Connect to the individual sensor database for sensor 410
+#conn <- create_railstate_db_connection(db_type="individual_sensor", merged_geography=NULL, sensor_number=410)
+```
+## Look at tables
+
+```{r}
+###
+# Get a sense of relational tables and shared cols
+###
+# This outputs a dataframe of table names and rows and columns. 
+# If you set get_count_of_rows_very_slow to TRUE, it will COUNT * each of the tables, and return those values in the dataframe. For the full database and the canada database, this is a computationally intensive operation. For the full db, the cars and hazmat tables have 241 million rows each (and growing)
+# I've written out a version with the rowcount so you can see it. 
+# It should be in memory as railstate_tables_and_cols_csv
+
+railstate_tables_and_cols <- get_railstate_tables_and_cols(conn=conn, get_count_of_rows_very_slow = FALSE)
+railstate_tables_and_cols
+```
+
+## Load and Analyze the Data
+
+### Option 1: Bring in every record of each table into memory, and work with it that way
+If you have a massive amount of compute and memory, this is fine to do
+
+```{r}
+
+# If you just want to get a sense of what's in each table, this is a good way to do it.  
+# The function below takes three arguments:
+# table_name: The name of the table you want to bring in
+# conn: The connection to the database
+# limit: The number of rows you want to bring in.  If you don't specify, it will bring in all rows.  This is a good way to limit the number of rows you bring in. For the entire database, remember that the entire tCars and tHazmat table each have 245 million rows.
+
+tSensorInfo <- get_railstate_db_table(table_name="tSensorInfo", conn=conn, limit = 100000)
+
+tSensorInfo %>%
+  leaflet() %>%
+  addTiles() %>%
+  addMarkers(lng = ~lng, lat = ~lat, 
+             popup = ~paste0("sensorId:", as.character(sensorId), " ", as.character(name)))
+
+tSensorInfo
+
+```
+
+```{r}
+tSensorStatusInfo <- get_railstate_db_table(table_name="tSensorStatusHist", conn=conn, limit = 100000)
+
+tSensorStatusInfo
+```
+
+```{r}
+
+tTrainSightings <- get_railstate_db_table(table_name="tTrainSightings", conn=conn, limit = 100000)
+tTrainSightings
+
+```
+
+```{r}
+
+tCars <- get_railstate_db_table(table_name="tCars", conn=conn, limit = 100000)
+tCars 
+
+```
+
+```{r}
+tHazmat <- get_railstate_db_table(table_name="tHazmat", conn=conn, limit=1000000)
+tHazmat
+```
+
+## Option 2: The DBPLYR way; translate R to SQL queries under the hood and execute
+
+```{r}
+
+
+# Connect to the database 
+
+# Have a look at the tables and columns
+# railstate_tables_and_cols <- get_railstate_tables_and_cols(conn=conn, get_count_of_rows_very_slow = TRUE)
+
+# Create table level connections and return to global env
+# This will be accessible later at railstate_table_connections$table_name
+
+railstate_table_connections <- create_table_connections(conn)
+
+
+###
+# Querying the database example with dplyr verbs, the long way
+###
+
+# Example: pull in the first 100 rows of the tSensorInfo table  
+
+# This creates an SQL query. It doesn't execute the query. It doesn't ingest a dataframe.
+tSensorInfo <- railstate_table_connections$tSensorInfo %>%
+  head(100) 
+
+# To examine the SQL query it creates, use show_query
+show_query(tSensorInfo)
+
+# To actually execute the query and pull the data into R, use collect()
+
+tSensorInfo <- collect(tSensorInfo)
+
+##
+## Same example, but do it all in one codeblock
+##
+
+tSensorInfo <- railstate_table_connections$tSensorInfo %>%
+  head(100) %>%
+  collect()
+
+##
+## Pull in the entire table (Basically, SELECT * FROM table name)
+##
+
+tSensorInfo <- railstate_table_connections$tSensorInfo %>%
+  collect()
+
+###
+# More Examples
+###
+
+# Bring in the hazmat table
+tHazmat <- railstate_table_connections$tHazmat %>%
+  head(100000) %>%
+  collect() 
+
+# Show all coal units
+tCoalUnits <- railstate_table_connections$tTrainSightings %>%
+  filter(trainType == "Coal Unit") %>%
+  collect()
+
+
+
+# Show all cars on those Coal Units 
+tCoalUnits_all_cars <- railstate_table_connections$tTrainSightings %>%
+  filter(trainType == "Coal Unit") %>%
+  inner_join(railstate_table_connections$tCars, by = "sightingId") %>%
+  collect()
+
+# Count the total number of cars on each of those Coal Unit trains
+tCoalUnits_car_count <- railstate_table_connections$tTrainSightings %>%
+  filter(trainType == "Coal Unit") %>%
+  inner_join(railstate_table_connections$tCars, by = "sightingId") %>%
+  group_by(trainId) %>%
+  count(name="total_cars") %>%
+  collect()
+
+##
+## Count the total number of hazmat placards by type and hazmat class
+##
+
+
+distinct_placard_class_railstate_query <- railstate_table_connections$tHazmat %>%
+ filter(car_hazmat_info_str != "[]") %>%
+ filter(car_hazmat_info_str != "null") %>%
+ filter(car_hazmat_info_str != '[{"placardType": null, "hazmatClass": null}]') %>%
+ filter(car_hazmat_info_str != '[{"placardType": "EMPTY", "hazmatClass": null}]') %>%
+ filter(placardType != "OTHER") %>%
+ filter(placardType != "EMPTY") %>%
+ group_by(placardType, hazmatClass) %>%
+ count() %>%
+ arrange(desc(n)) %>%
+ collect() %>%
+ rename(count_placard_type_railstate = n) %>%
+ rename(placard_type = placardType,
+         hazmat_class_railstate = hazmatClass) %>%
+ inner_join(placards_crosswalk) 
+
+distinct_placard_class_railstate
+
+```
+
+
+
