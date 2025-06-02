@@ -1,6 +1,0 @@
-table_name,num_cols,num_rows,column_names
-tCars,9,241456691,"sightingId, carPosition, type, carId, hazmats, containers, owner, isLoaded, equipmentParameters"
-tHazmat,6,241491971,"sightingId, carPosition, placardType, hazmatClass, containers, car_hazmat_info_str"
-tSensorInfo,10,231,"sensorId, name, lat, lng, railways, operatingRailways, timezone, country, region, isActive"
-tSensorStatusHist,3,3586,"sensorId, start, end"
-tTrainSightings,20,2454928,"sightingId, trainId, sensorId, detectionTimeUTC, detectionTimeSensorLocal, detectionEndUTC, detectionEndSensorLocal, direction, speedMph, trainType, trainOperator, warnings, issues, lastModified, estGallonageCapacity, estCubicFeetCapacity, estloadLimitTons, estTareWeightTons, estGrossWeightTons, estLengthFeet"
