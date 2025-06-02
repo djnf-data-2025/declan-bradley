@@ -19,6 +19,11 @@ library(readxl)
 library(here)
 library(leaflet)
 library(googledrive)
+source('declan_railstate/shared_scripts/helper_functions.R')
+
+placards_crosswalk <- read_csv(here("declan_railstate/other_data/placards_crosswalk_cfr_census_railstate.csv")) %>%
+  filter(in_railstate==TRUE) %>%
+  select(placard_type, hazmat_class_railstate, hazmat_name_cfr) 
 
 conn <- create_railstate_db_connection(db_type="merged", merged_geography="all_sensors", sensor_number=NULL)
 
@@ -73,6 +78,7 @@ hazmat_sightings <- railstate_table_connections$tHazmat |>
   filter(placardType != "OTHER") %>%
   filter(placardType != "EMPTY") |>
   collect() |>
+  colnames()
   left_join(placards_crosswalk |>
             rename(hazmatClass = hazmat_class_railstate) |>
             rename(placardType = placard_type), by=c('placardType', 'hazmatClass'))
@@ -119,3 +125,43 @@ materials_on_trains |>
   group_by(hazmat_name_cfr) |>
   summarize(num_trains = length(hazmat_name_cfr)) |>
   arrange(desc(num_trains))
+
+railstate_table_connections$tCars |>
+  filter(hazmats != "null") |>
+  colnames()
+
+cars_w_hazmat_classes <- railstate_table_connections$tHazmat |>
+  filter(car_hazmat_info_str != "[]") %>%
+  filter(car_hazmat_info_str != "null") %>%
+  filter(car_hazmat_info_str != '[{"placardType": null, "hazmatClass": null}]') %>%
+  filter(car_hazmat_info_str != '[{"placardType": "EMPTY", "hazmatClass": null}]') %>%
+  filter(placardType != "OTHER") %>%
+  filter(placardType != "EMPTY")
+
+cars_w_hazmat_classes <- cars_w_hazmat_classes |>
+  left_join(railstate_table_connections$tTrainSightings |>
+            select(sightingId, trainId))
+
+cars_w_hazmat_classes <- cars_w_hazmat_classes |>
+  left_join(railstate_table_connections$tCars |>
+            select(sightingId, carPosition, type, isLoaded),
+            by=c('sightingId', 'carPosition'))
+
+# presuming 1 means true
+cars_w_hazmat_classes <- cars_w_hazmat_classes |>
+  mutate(key_car = case_when(
+    (placardType %in% c("UN1005", "UN3318")) && (type == "Tank Car") && (isLoaded == 1) ~ TRUE,
+    TRUE ~ FALSE
+  )) |>
+  mutate(hazard_shipment = case_when(
+    (placardType %in% c("UN1005", "UN3318")) || (hazmatClass %in% c(2.1, 1.1, 1.2)) ~ TRUE,
+    TRUE ~ FALSE
+  ))
+
+cars_w_hazmat_classes |>
+  select(trainId, key_car, hazard_shipment) |>
+  collect()
+  
+
+group_by(trainId) |>
+  summarize(key_car = length(which(key_car)))
