@@ -7,6 +7,8 @@ author: "Declan Bradley"
 
 The following analysis is based on a database of rail accidents scraped using an undocumented API which underlies the [National Transportation Safety Board website](https://www.ntsb.gov/investigations/Pages/Investigations.aspx). To narrow the scope of my initial analysis, I focused on the date and time of accidents. I found that accidents spiked at 11am, standardizing to local time at the location of each accident. Strikingly, accidents remained largely consistent throughout the other 23 hours of the waking day, with slight dips overnight. 
 
+#rsw comment: nice job normalizing the time zones
+
 ```{r}
 suppressPackageStartupMessages({
     library(tidyverse)
@@ -44,6 +46,7 @@ I propose several possible explanations for this phenomenon:
 - **Base Rates**: More trains are actively on the rails at 11am compared to other times of day. Then the proportion of trains that experience accidents might remain the same regardless of the time of day, even though the number appears higher. This can be verified or falsified with further work.
 
 - **Time Dependence**: Variation in the number of trains running does not correlate with the spike, in which case one of the following may be true:
+#rsw - great to see these possible scenarios. The rail union officials would be able to help with insight about shift changes
 
     - It is possible that Amtrak shift changes frequently occurr around 11am. A tired crew about to get off the train, or alternatively a green crew not familiar with the train they just boarded, may be more likely to experience accidents.
 
