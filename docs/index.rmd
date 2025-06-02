@@ -2,6 +2,7 @@
 title: "Declan Bradley - Howard Center"
 output: html_document
 date: "2025-04-22"
+author: "Declan Bradley"
 ---
 
 A demo notebook for Dow Jones News Fund data interns
@@ -9,7 +10,7 @@ A demo notebook for Dow Jones News Fund data interns
 During the week’s training, you will work on a project called Investigate Your Community to produce detailed story pitches relevant to their summer internship positions. The goal is to have the students research a topic relevant to your newsroom so they can get to work immediately at the internship. 
 
 Here are some examples from last year’s DJNF data journalism training:
-
+a
 Hannah Rosenberger, at ASI Media/Counselor magazine, produced this analysis on name, image and likeness trends: https://hrosenberger.github.io/ASI-NIL-Project/
 
 Shifra Dayak, an intern at the Connecticut Mirror, produced this analysis of environment spill data: https://shifradayak.github.io/DJNF_Merrill/ct_env_spills.html.
