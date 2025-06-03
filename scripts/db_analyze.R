@@ -160,13 +160,28 @@ cars_w_hazmat_classes <- cars_w_hazmat_classes |>
     TRUE ~ FALSE
   ))
 
-cars_w_hazmat_classes |>
+key_cars_per_train <- cars_w_hazmat_classes |>
   select(trainId, key_car, hazard_shipment) |>
-  filter(key_car) |>
   group_by(trainId) |>
-  summarize(num_key_cars = length(key_car))
+  summarize(num_key_cars = sum(key_car))
 
-cars_w_hazmat_classes |>
-  filter(!key_car) |>
-  head(100)
-  
+hazard_shipments_per_train <- cars_w_hazmat_classes |>
+  select(trainId, key_car, hazard_shipment) |>
+  group_by(trainId) |>
+  summarize(num_hazard_shipments = sum(hazard_shipment))
+
+danger_cars_per_train <- left_join(key_cars_per_train, hazard_shipments_per_train, by='trainId')
+
+key_trains <- danger_cars_per_train |>
+  filter(num_key_cars >= 5 || num_hazard_shipments >= 20)
+
+key_train_ids <- key_trains |>
+  pull(trainId) |>
+  unique()
+
+violators <- railstate_table_connections$tTrainSightings |>
+  filter((trainId %in% key_train_ids))
+
+violators |>
+  collect() |>
+  write.csv('violating-trains.csv', row.names=FALSE)

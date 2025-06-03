@@ -1,33 +1,44 @@
 ---
-title: "Declan Bradley - Howard Center"
+title: "Declan Bradley - Railstate Pitch"
 output: html_document
-date: "2025-04-22"
+date: "2025-06-02"
 author: "Declan Bradley"
 ---
 
-A demo notebook for Dow Jones News Fund data interns
+**Declan Bradley**, declanrjb@proton.me, (616) 914-9525
 
-During the week’s training, you will work on a project called Investigate Your Community to produce detailed story pitches relevant to their summer internship positions. The goal is to have the students research a topic relevant to your newsroom so they can get to work immediately at the internship. 
+# Story Pitch
 
-Here are some examples from last year’s DJNF data journalism training:
-a
-Hannah Rosenberger, at ASI Media/Counselor magazine, produced this analysis on name, image and likeness trends: https://hrosenberger.github.io/ASI-NIL-Project/
+## Key Idea
+The Association of American Railroads requires that trains carrying certain loads of hazardous material, referred to as "key trains," travel no faster than 50 mph. An analysis of car and train tables, cross-referenced with snapshots of travel speed at each track sensor, can identify instances of high risk cargoes traveling faster than 50 mph, in violation of this requirement.
 
-Shifra Dayak, an intern at the Connecticut Mirror, produced this analysis of environment spill data: https://shifradayak.github.io/DJNF_Merrill/ct_env_spills.html.
+## Relevance
+The Trump administration has implemented cuts to oversight and enforcement across the federal government, making this story especially impactful in a time of increased risk for accidents in the air, at sea, and on the rails.
 
-Michael Zhang, an intern at the Houston Landing, explored local election data: https://michaelzhangreporter.github.io/Houston_Campaign_Finance/
+## Audience
+Decision makers, legislators, and rail industry professionals could use these findings as a basis to step up enforcement of rail safety.
 
+## Potential Interviews
+- A train pilot or technician with experience transporting hazardous materials
+- Officials involved in the NTSB (National Transportation Safety Board)
+- Scientific experts on the specific materials found to be frequently moved at high speeds
 
-Here's what your newsroom suggested for a project:
-It will likely be something related to trains -- either the data we have from RailState or databases of NTSB investigations, accidents from the Federal Railroad Administration or similar. 
+## Potential Impact
+It should be noted that this analysis is preliminary and may ultimately find no significant violations of regulation. However, if violations are found, they would be serious incidents that could sway public leaders to step up enforcement of safety regulations. Even if no key trains exceed the limit of 50 mph, hazardous materials might still found to be moving at high speeds, which could still be cause for concern to the public, especially if such speeds are detected in regions at high risk for derailments or accidents.
 
+## Surprising Findings
+The sheer number of cars classified as key or hazardous is striking. Even after filtering for cars not marked as empty, the data is still too large to process quickly. Additionally, many trains travel over the recommended limit, hitting 70 or 80 miles an hour, although I have not yet succeeded in identifying which of these are key trains. I found that certain hazardous materials tend to travel faster than others, which I have as yet no explanation for.
 
-https://github.com/smussenden/declan_railstate
+## Prior Coverage
+In February 2023, a train derailment in East Palestine OH spilled hazardous materials including vinyl chloride into the surrounding land. The crash devastated the local community, and an ongoing cleanup effort has so far cost more than $800 million, according to [NPR reporting](https://www.npr.org/2024/02/05/1228772709/east-palestine-train-derailment-norfolk-southern-lawsuit-epa).
 
-After unzipping, either delete the zip file OR add it to the gitignore for the repo
+## Visuals
+An interactive map can display sensor sites where hazardous trains were detected traveling at high speeds. The data already has lat long coordinates, so producing such a map should not be particularly time consuming. The story can also use images and videos from known crash sites such as the East Palestine derailment, although it will be important to clarify whether those crashes occurred under high speed conditions.
 
-Declan will need to clone the repo and run the script
+## Further Work
+This analysis relies on the assumption that a trainId designates a specific journey and not a specific locomotive. That is to say, if a given trainId is carrying hazardous materials, it is carrying those materials at every sensor observation. If trains instead retain consistent IDs while loading and unloading cars it will be more difficult to guarantee that trains are violating safety codes. A train could, for example, detach its hazardous cars at one station, then accelerate before the next sensor, all without violating safety codes.
 
-The file shared_scripts/database_loading_scripts.rmd walks through the process of downloading the data as a zip file -- it's on a password protected google drive, so we'll need to add declan. I've added you.
-The script unzips it 
-and then there's some code for loading and accessing the data
+It is also worthy of note that the analysis is incomplete, and the code takes significant time to execute. More work will be needed to produce specific deliverable results.
+
+## Estimated Delivery
+The data is readily available, but analysis will take time. The most time consuming aspect of the project will be finding sources involved in the rail industry willing to speak on the record about these issues. To be cautious, I would estimate a project ready for review by an editor, if not immediate publication, would take until mid July.
