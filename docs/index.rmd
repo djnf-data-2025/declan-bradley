@@ -13,7 +13,7 @@ author: "Declan Bradley"
 The Association of American Railroads requires that trains carrying certain loads of hazardous material, referred to as "key trains," travel no faster than 50 mph. An analysis of car and train tables, cross-referenced with snapshots of travel speed at each track sensor, can identify instances of high risk cargoes traveling faster than 50 mph, in violation of this requirement.
 
 ## Relevance
-The Trump administration has implemented cuts to oversight and enforcement across the federal government, making this story especially impactful in a time of increased risk for accidents in the air, at sea, and on the rails.
+The Trump administration has implemented cuts to oversight and enforcement across the federal government, making this story especially impactful in a time of increased risk for accidents in the air, at sea, or on the rails.
 
 ## Audience
 Decision makers, legislators, and rail industry professionals could use these findings as a basis to step up enforcement of rail safety.
@@ -123,21 +123,33 @@ hazard_shipments_per_train <- cars_w_hazmat_classes |>
   group_by(trainId) |>
   summarize(num_hazard_shipments = sum(hazard_shipment))
 
-danger_cars_per_train <- left_join(key_cars_per_train, hazard_shipments_per_train, by='trainId')
+danger_cars_per_train |>
+  write.csv('declan_railstate/danger_cars.csv')
+
+message('succesfully saved danger cars')
 
 key_trains <- danger_cars_per_train |>
   filter(num_key_cars >= 5 || num_hazard_shipments >= 20)
+
+message('identified key trains')
 
 # disclaimer: as of midnight I have not been able to attain a result from anything below this step. I believe the code is correct, and that it will eventually produce an answer, but when I run it my console freezes and blocks further input. I have seen this happen before today, the command evnetually produced a correct result after nearly 20 minutes of processing. I have no way to estimate how long this process will take, but hope it will be done by morning.
 key_train_ids <- key_trains |>
   pull(trainId) |>
   unique()
 
+message('saved key trains to vector')
+
 violators <- railstate_table_connections$tTrainSightings |>
-  filter((trainId %in% key_train_ids))
+  filter((trainId %in% key_train_ids)) |>
+  filter(speedMph >= 50)
+
+message('identified violators')
 
 violators |>
   collect() |>
   write.csv('violating-trains.csv', row.names=FALSE)
+
+message('saved violators')
 
 ```

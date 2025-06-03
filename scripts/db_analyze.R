@@ -172,16 +172,30 @@ hazard_shipments_per_train <- cars_w_hazmat_classes |>
 
 danger_cars_per_train <- left_join(key_cars_per_train, hazard_shipments_per_train, by='trainId')
 
+danger_cars_per_train |>
+  write.csv('declan_railstate/danger_cars.csv')
+
+message('succesfully saved danger cars')
+
 key_trains <- danger_cars_per_train |>
   filter(num_key_cars >= 5 || num_hazard_shipments >= 20)
+
+message('identified key trains')
 
 key_train_ids <- key_trains |>
   pull(trainId) |>
   unique()
 
+message('saved key trains to vector')
+
 violators <- railstate_table_connections$tTrainSightings |>
-  filter((trainId %in% key_train_ids))
+  filter((trainId %in% key_train_ids)) |>
+  filter(speedMph >= 50)
+
+message('identified violators')
 
 violators |>
   collect() |>
   write.csv('violating-trains.csv', row.names=FALSE)
+
+message('saved violators')
