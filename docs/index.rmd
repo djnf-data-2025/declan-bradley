@@ -10,7 +10,7 @@ author: "Declan Bradley"
 # Story Pitch
 
 ## Key Idea
-The Association of American Railroads requires that trains carrying certain loads of hazardous material, referred to as "key trains," travel no faster than 50 mph. An initial analysis of car and train tables, cross-referenced with snapshots of travel speed at each track sensor, has tentatively identified 9,605 instances of high risk cargoes traveling faster than 50 mph, in violation of this requirement.
+The Association of American Railroads requires that trains carrying certain loads of hazardous material, referred to as "key trains," travel no faster than 50 mph. An initial analysis of car and train tables, cross-referenced with snapshots of travel speed at each track sensor, has tentatively identified **9,605 instances of high risk cargoes traveling faster than 50 mph**, in violation of this requirement.
 
 ## Relevance
 The Trump administration has implemented cuts to oversight and enforcement across the federal government, making this story especially impactful in a time of increased risk for accidents in the air, at sea, or on the rails.

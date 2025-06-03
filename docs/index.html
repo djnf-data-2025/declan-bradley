@@ -142,11 +142,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1>Story Pitch</h1>
 <section id="key-idea" class="level2">
 <h2 class="anchored" data-anchor-id="key-idea">Key Idea</h2>
-<p>The Association of American Railroads requires that trains carrying certain loads of hazardous material, referred to as “key trains,” travel no faster than 50 mph. An analysis of car and train tables, cross-referenced with snapshots of travel speed at each track sensor, can identify instances of high risk cargoes traveling faster than 50 mph, in violation of this requirement.</p>
+<p>The Association of American Railroads requires that trains carrying certain loads of hazardous material, referred to as “key trains,” travel no faster than 50 mph. An initial analysis of car and train tables, cross-referenced with snapshots of travel speed at each track sensor, has tentatively identified <strong>9,605 instances of high risk cargoes traveling faster than 50 mph</strong>, in violation of this requirement.</p>
 </section>
 <section id="relevance" class="level2">
 <h2 class="anchored" data-anchor-id="relevance">Relevance</h2>
-<p>The Trump administration has implemented cuts to oversight and enforcement across the federal government, making this story especially impactful in a time of increased risk for accidents in the air, at sea, and on the rails.</p>
+<p>The Trump administration has implemented cuts to oversight and enforcement across the federal government, making this story especially impactful in a time of increased risk for accidents in the air, at sea, or on the rails.</p>
 </section>
 <section id="audience" class="level2">
 <h2 class="anchored" data-anchor-id="audience">Audience</h2>
@@ -162,11 +162,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </section>
 <section id="potential-impact" class="level2">
 <h2 class="anchored" data-anchor-id="potential-impact">Potential Impact</h2>
-<p>It should be noted that this analysis is preliminary and may ultimately find no significant violations of regulation. However, if violations are found, they would be serious incidents that could sway public leaders to step up enforcement of safety regulations. Even if no key trains exceed the limit of 50 mph, hazardous materials might still found to be moving at high speeds, which could still be cause for concern to the public, especially if such speeds are detected in regions at high risk for derailments or accidents.</p>
+<p>It should be noted that this analysis is preliminary. However, if these violations are verified, they would be serious incidents that could sway public leaders to step up enforcement of safety regulations.</p>
 </section>
 <section id="surprising-findings" class="level2">
 <h2 class="anchored" data-anchor-id="surprising-findings">Surprising Findings</h2>
-<p>The sheer number of cars classified as key or hazardous is striking. Even after filtering for cars not marked as empty, the data is still too large to process quickly. Additionally, many trains travel over the recommended limit, hitting 70 or 80 miles an hour, although I have not yet succeeded in identifying which of these are key trains. I found that certain hazardous materials tend to travel faster than others, which I have as yet no explanation for.</p>
+<p>The sheer number of cars classified as key or hazardous is striking. Even after filtering for cars not marked as empty, the data is still too large to process quickly. Additionally, many trains travel over the recommended limit. I found that certain hazardous materials tend to travel faster than others, which I have as yet no explanation for. Finally, the sheer number of key trains violating the speed limit is remarkable. It is worthy of note that this analysis only encodes the easy identifiers of key trains (identifying number and hazmat class code). Other qualifying characteristics, such as nuclear materials, can only add to the number of key trains once encoded, broadening the scope of the findings.</p>
 </section>
 <section id="prior-coverage" class="level2">
 <h2 class="anchored" data-anchor-id="prior-coverage">Prior Coverage</h2>
@@ -179,7 +179,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <section id="further-work" class="level2">
 <h2 class="anchored" data-anchor-id="further-work">Further Work</h2>
 <p>This analysis relies on the assumption that a trainId designates a specific journey and not a specific locomotive. That is to say, if a given trainId is carrying hazardous materials, it is carrying those materials at every sensor observation. If trains instead retain consistent IDs while loading and unloading cars it will be more difficult to guarantee that trains are violating safety codes. A train could, for example, detach its hazardous cars at one station, then accelerate before the next sensor, all without violating safety codes.</p>
-<p>It is also worthy of note that the analysis is incomplete, and the code takes significant time to execute. More work will be needed to produce specific deliverable results.</p>
 </section>
 <section id="estimated-delivery" class="level2">
 <h2 class="anchored" data-anchor-id="estimated-delivery">Estimated Delivery</h2>
@@ -263,22 +262,33 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(trainId) <span class="sc">|&gt;</span></span>
 <span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">num_hazard_shipments =</span> <span class="fu">sum</span>(hazard_shipment))</span>
 <span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>danger_cars_per_train <span class="ot">&lt;-</span> <span class="fu">left_join</span>(key_cars_per_train, hazard_shipments_per_train, <span class="at">by=</span><span class="st">'trainId'</span>)</span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>key_trains <span class="ot">&lt;-</span> danger_cars_per_train <span class="sc">|&gt;</span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(num_key_cars <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">||</span> num_hazard_shipments <span class="sc">&gt;=</span> <span class="dv">20</span>)</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>danger_cars_per_train <span class="sc">|&gt;</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write.csv</span>(<span class="st">'declan_railstate/danger_cars.csv'</span>)</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="st">'succesfully saved danger cars'</span>)</span>
 <span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="co"># disclaimer: as of midnight I have not been able to attain a result from anything below this step. I believe the code is correct, and that it will eventually produce an answer, but when I run it my console freezes and blocks further input. I have seen this happen before today, the command evnetually produced a correct result after nearly 20 minutes of processing. I have no way to estimate how long this process will take, but hope it will be done by morning.</span></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>key_train_ids <span class="ot">&lt;-</span> key_trains <span class="sc">|&gt;</span></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(trainId) <span class="sc">|&gt;</span></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>key_trains <span class="ot">&lt;-</span> danger_cars_per_train <span class="sc">|&gt;</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(num_key_cars <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">||</span> num_hazard_shipments <span class="sc">&gt;=</span> <span class="dv">20</span>)</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="st">'identified key trains'</span>)</span>
 <span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>violators <span class="ot">&lt;-</span> railstate_table_connections<span class="sc">$</span>tTrainSightings <span class="sc">|&gt;</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>((trainId <span class="sc">%in%</span> key_train_ids))</span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>violators <span class="sc">|&gt;</span></span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write.csv</span>(<span class="st">'violating-trains.csv'</span>, <span class="at">row.names=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>key_train_ids <span class="ot">&lt;-</span> key_trains <span class="sc">|&gt;</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(trainId) <span class="sc">|&gt;</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="st">'saved key trains to vector'</span>)</span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>violators <span class="ot">&lt;-</span> railstate_table_connections<span class="sc">$</span>tTrainSightings <span class="sc">|&gt;</span></span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>((trainId <span class="sc">%in%</span> key_train_ids)) <span class="sc">|&gt;</span></span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(speedMph <span class="sc">&gt;=</span> <span class="dv">50</span>)</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="st">'identified violators'</span>)</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>violators <span class="sc">|&gt;</span></span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write.csv</span>(<span class="st">'violating-trains.csv'</span>, <span class="at">row.names=</span><span class="cn">FALSE</span>)</span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="st">'saved violators'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 
