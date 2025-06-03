@@ -3,23 +3,39 @@ library(mosaic)
 
 violators <- read_csv('data/violating-trains.csv')
 
+sensor_info <- railstate_table_connections$tSensorInfo |> 
+  select(sensorId, name, lat, lng, timezone, country, region) |>
+  rename(sensorName = name) |>
+  collect()
+
+violators <- left_join(violators, sensor_info, by='sensorId')
+
+# a bunch of these are in canada and therefore not actually illegal
+violators |>
+  group_by(country) |>
+  summarize(num_trains = length(unique(trainId))) |>
+  arrange(desc(num_trains))
+
+violators <- violators |>
+  filter(country == "United States")
+
 violators <- violators |>
   mutate(excessSpeed = speedMph - 50)
 
 # most violators have low excesses, median 3.5 mph in excess
 favstats(violators$excessSpeed)
 
-#3.7k traveling more than 5 mph over the limit
+#579 traveling more than 5 mph over the limit
 violators |> 
   filter(excessSpeed >= 5) |> 
   dim()
 
-# 1.1k more than 10pmh over
+# 79 more than 10pmh over
 violators |> 
   filter(excessSpeed >= 10) |> 
   dim()
 
-# most (1139) are unique trains, very few are repeat sightings
+# most (77) are unique trains, very few are repeat sightings
 # hypothesis: speeding trains don't speed typically, these are single incidents per journey
 violators |> 
   filter(excessSpeed >= 10) |> 
@@ -60,26 +76,65 @@ train_counts_by_excess <- violators |>
 train_counts_by_excess |>
   write.csv('viz/train-counts-by-excess.csv', row.names=FALSE)
 
-violators |>
-  filter(excessSpeed >= 10) |>
-  pull(trainId) |>
-  unique() |>
-  length()
 
-sensor_info <- railstate_table_connections$tSensorInfo |> 
-  select(sensorId, name, lat, lng, timezone, country, region) |>
-  rename(sensorName = name) |>
-  collect()
 
-violators <- left_join(violators, sensor_info, by='sensorId')
+# major violations
+major_violators <- violators |>
+  filter(excessSpeed >= 10)
 
-violators |>
-  filter(speedMph >= 90) |>
-  select(detectionTimeSensorLocal, trainOperator, sensorName, lat, lng, region, country) |>
-  pull(trainOperator)
-
-violators |> 
+# 50 violations by Northfolk Southern
+major_violators |> 
   group_by(trainOperator) |>
   summarize(num_trains = length(unique(trainId))) |>
   arrange(desc(num_trains))
 
+major_violators <- major_violators |>
+  reverse_geocode(lat, lng, full_results=FALSE)
+
+major_violators <- major_violators |>
+  mutate(state = str_squish(str_split_i(address, ",", -3)))
+
+# only one wrong
+major_violators |>
+  filter(state %in% state.name) |>
+  dim()
+dim(major_violators)
+
+# fixed the only bad one
+major_violators[4,]$state <- str_squish(str_split_i(major_violators[4,]$address, ",", -2))
+
+# 50 in ohio
+# that's where the east palestine accident happened!
+# starting to get somewhere here
+major_violators |>
+  group_by(state) |>
+  summarize(num_trains = length(unique(trainId)))
+
+major_violators |>
+  filter(state == "Ohio") |>
+  pull(excessSpeed) |>
+  favstats()
+
+major_violators <- major_violators |>
+  mutate(detectionTimeUTC = parse_date_time(detectionTimeUTC, orders="%Y-%m-%d %H:%M:%S")) |>
+  mutate(date = date(detectionTimeUTC))
+
+major_violators |>
+  count(year(date))
+
+# speeding is more common in winter
+major_violators |>
+  count(month(date))
+
+# all 50 major violators in ohio were operated by norfolk southern
+major_violators |>
+  filter(state == "Ohio") |>
+  count(trainOperator)
+
+# the same operator of the east palestine derailment!!!!
+# https://www.norfolksouthern.com/
+# https://en.wikipedia.org/wiki/East_Palestine,_Ohio,_train_derailment
+# real independent finding
+
+major_violators |>
+  arrange(date)
