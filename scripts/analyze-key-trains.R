@@ -146,8 +146,8 @@ major_violators |>
   summarize(num_incidents = length(trainId))
 
 major_violators <- major_violators |>
-  mutate(detectionTimeUTC = parse_date_time(detectionTimeUTC, orders="%Y-%m-%d %H:%M:%S")) |>
-  mutate(date = date(detectionTimeUTC))
+  mutate(detectionTimeSensorLocal = parse_date_time(detectionTimeSensorLocal, orders="%Y-%m-%d %H:%M:%S")) |>
+  mutate(date = date(detectionTimeSensorLocal))
 
 major_violators |>
   count(year(date))
@@ -234,3 +234,47 @@ east_palestine_sightings <- railstate_table_connections$tTrainSightings |>
 
 east_palestine_sightings |>
   write.csv("data/east-palestine-sightings.csv", row.names=FALSE)
+
+east_pal <- read_csv('data/east-palestine-sightings.csv')
+
+east_pal <- east_pal |>
+  filter(trainId %in% key_trains$trainId)
+
+# there have been 457 key trains passing by east pal
+dim(east_pal)
+
+east_pal <- east_pal |>
+  mutate(excessSpeed = speedMph - 50)
+
+# 10% of all key train sightings in east palestine are speeding by 10 mph or more
+east_pal |> 
+  filter(excessSpeed >= 10) |>
+  pull(trainId) |>
+  length() / east_pal |> 
+    pull(trainId) |>
+    length()
+
+# ns is the only company operating hazard trains near east pal
+east_pal |>
+  group_by(trainOperator) |>
+  summarize(numSightings = length(trainId))
+
+# all 50 of the speeding hazard trains are ns operated
+east_pal |>
+  filter(excessSpeed >= 10) |>
+  group_by(trainOperator) |>
+  summarize(numSightings = length(trainId))
+
+east_pal <- east_pal |>
+  mutate(date = str_split_i(detectionTimeSensorLocal, "T", 1)) |>
+  mutate(date = parse_date_time(date, orders="%Y-%m-%d"))
+
+# almost all speeders are eastbound
+east_pal |> 
+  filter(excessSpeed >= 10) |> 
+  group_by(direction) |> 
+  summarize(speeders = length(trainId))
+
+# but key trains in general are more likely to westbound, making this disproprortion particularly striking
+east_pal |> 
+  count(direction)
