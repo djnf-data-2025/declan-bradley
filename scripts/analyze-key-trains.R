@@ -267,7 +267,11 @@ east_pal |>
 
 east_pal <- east_pal |>
   mutate(date = str_split_i(detectionTimeSensorLocal, "T", 1)) |>
-  mutate(date = parse_date_time(date, orders="%Y-%m-%d"))
+  mutate(date = parse_date_time(date, orders="%Y-%m-%d")) |>
+  mutate(time = detectionTimeSensorLocal |>
+    str_split_i("T", 2) |> 
+    str_split_i("\\.", 1) |> 
+    parse_date_time(orders="%H:%M:%S"))
 
 # almost all speeders are eastbound
 east_pal |> 
@@ -278,3 +282,32 @@ east_pal |>
 # but key trains in general are more likely to westbound, making this disproprortion particularly striking
 east_pal |> 
   count(direction)
+
+# all speeding key trains are manifest trains
+east_pal |> 
+  filter(excessSpeed >= 10) |> 
+  count(trainType)
+
+east_pal_viz <- east_pal |>
+  arrange(detectionTimeSensorLocal) |>
+  select(detectionTimeSensorLocal, date, time, speedMph, excessSpeed, trainId) |>
+  mutate(`Speed Limit` = case_when(
+    excessSpeed >= 10 ~ "Severe Violations of Safety Codes",
+    excessSpeed < 10 & excessSpeed > 0 ~ "Minor Violations",
+    TRUE ~ "Operating Within Limits"
+  )) |>
+  mutate(`Local Time` = strftime(time, "%H:%M %p")) |>
+  select(!time)
+
+east_pal_viz |>
+  rename(`Date & Time` = detectionTimeSensorLocal,
+        Date = date,
+        `Speed mph` = speedMph) |>
+  mutate(Location = "East Palestine, OH") |>
+  write.csv("viz/east-pal_lollipops.csv", row.names=FALSE)
+
+east_pal |>
+  filter(excessSpeed > 0) |>
+  filter(excessSpeed < 10) |>
+  pull(trainId) |>
+  length()

@@ -11,7 +11,9 @@ author: "Declan Bradley"
 
 ## Key Idea
 
-The Association of American Railroads requires that trains carrying certain loads of hazardous material, referred to as "key trains," travel no faster than 50 mph. An initial analysis of car and train tables, cross-referenced with snapshots of travel speed at each track sensor, has tentatively identified **9,605 instances of high risk cargoes traveling faster than 50 mph**, in violation of this requirement. (See collected data [here](https://github.com/djnf-data-2025/declan-bradley/blob/main/data/violating-trains.csv).) **#rsw comment: what percentage of these hazmat trains are speeding? follow up on derailment reports and find out how many involved excessive speed#**
+In 2023, a Northern Southern train derailed in East Palestine, OH, spilling toxic materials including hydrogen chloride and phosgene into the local community. Rail sensor data shows that despite the accident - which has so far cost $800 million in an ongoing cleanup effort - Northfolk Southern has continued to operate trains containing significant loads of hazardous material through East Palestine well in excess of their maximum safe speed.
+
+<div class="flourish-embed flourish-scatter" data-src="visualisation/23592486"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/23592486/thumbnail" width="100%" alt="scatter visualization" /></noscript></div>
 
 ## Relevance
 
@@ -23,33 +25,49 @@ Decision makers, legislators, and rail industry professionals could use these fi
 
 ## Potential Interviews
 
--   A train pilot or technician with experience transporting hazardous materials
+-   Residents of East Palestine, OH affected by the crash and the ongoing cleanup in their community
 -   Officials involved in the NTSB (National Transportation Safety Board)
 -   Scientific experts on the specific materials found to be frequently moved at high speeds
 
 ## Potential Impact
 
-It should be noted that this analysis is preliminary. However, if these violations are verified, they would be serious incidents that could sway public leaders to step up enforcement of safety regulations.
+It should be noted that this analysis is preliminary. However, if these violations are verified, they would be serious incidents that could sway public leaders to step up enforcement of safety regulations. The continued violation of safe speeds by Norfolk Southern **after** a serious crash may signal troublesome business practice.
 
 ## Surprising Findings
 
-The sheer number of cars classified as key or hazardous is striking. Even after filtering for cars not marked as empty, the data is still too large to process quickly. Additionally, many trains travel over the recommended limit. I found that certain hazardous materials tend to travel faster than others, which I have as yet no explanation for. Finally, the sheer number of key trains violating the speed limit is remarkable. It is worthy of note that this analysis only encodes the easy identifiers of key trains (identifying number and hazmat class code). Other qualifying characteristics, such as nuclear materials, can only add to the number of key trains once encoded, broadening the scope of the findings.
+The sheer number of cars classified as key or hazardous is striking. Even after filtering for cars not marked as empty, the data is still too large to process quickly. Additionally, many trains travel over the recommended limit. I found that certain hazardous materials tend to travel faster than others, which I have as yet no explanation for. Finally, the sheer number of key trains violating the speed limit is remarkable. It is worthy of note that 
 
 ## Prior Coverage
 
-In February 2023, a train derailment in East Palestine OH spilled hazardous materials including vinyl chloride into the surrounding land. The crash devastated the local community, and an ongoing cleanup effort has so far cost more than \$800 million, according to [NPR reporting](https://www.npr.org/2024/02/05/1228772709/east-palestine-train-derailment-norfolk-southern-lawsuit-epa).
+In February 2023, a train derailment in East Palestine, OH, spilled hazardous materials including vinyl chloride into the surrounding land. The crash devastated the local community, and an ongoing cleanup effort has so far cost more than \$800 million, according to [NPR reporting](https://www.npr.org/2024/02/05/1228772709/east-palestine-train-derailment-norfolk-southern-lawsuit-epa).
 
 ## Visuals
 
-An interactive map can display sensor sites where hazardous trains were detected traveling at high speeds. The data already has lat long coordinates, so producing such a map should not be particularly time consuming. The story can also use images and videos from known crash sites such as the East Palestine derailment, although it will be important to clarify whether those crashes occurred under high speed conditions.
+An interactive map can display sensor sites where hazardous trains were detected traveling at high speeds. The data already has lat long coordinates, so producing such a map should not be particularly time consuming. The story can also use images and videos from the East Palestine crash site.
 
 ## Further Work
 
-This analysis relies on the assumption that a trainId designates a specific journey and not a specific locomotive. That is to say, if a given trainId is carrying hazardous materials, it is carrying those materials at every sensor observation. If trains instead retain consistent IDs while loading and unloading cars it will be more difficult to guarantee that trains are violating safety codes. A train could, for example, detach its hazardous cars at one station, then accelerate before the next sensor, all without violating safety codes. Additionally, the document on which these definitions are based dates to 2011. A thorough story will need to either base its definitions on more recent documentation or verify that these remain the latest guidelines.
+This analysis only encodes the easy [identifiers of key trains](https://github.com/djnf-data-2025/declan-bradley/blob/main/references/aar-instructions.pdf) (identifying number and hazmat class code). Other qualifying characteristics, such as nuclear materials, can only add to the number of key trains once encoded, broadening the scope of the findings.
+
+A key question will be whether the East Palestine crash occurred at speeds exceeding the recommended limit. The New Waterford sensor logs don't go back far enough chronologically to have observed transits on February 3rd, 2023, so further reporting will be needed to establish this answer. 
+
+This analysis also relies on the assumption that a trainId designates a specific journey and not a specific locomotive. That is to say, if a given trainId is carrying hazardous materials, it is carrying those materials at every sensor observation. If trains instead retain consistent IDs while loading and unloading cars it will be more difficult to guarantee that trains are violating safety codes. A train could, for example, detach its hazardous cars at one station, then accelerate before the next sensor, all without violating safety codes. Additionally, the document on which these definitions are based dates to 2011. A thorough story will need to either base its definitions on more recent documentation or verify that these remain the latest guidelines.
 
 ## Estimated Delivery
 
 The data is readily available, but analysis will take time. The most time consuming aspect of the project will be finding sources involved in the rail industry willing to speak on the record about these issues. To be cautious, I would estimate a project ready for review by an editor, if not immediate publication, would take until mid July.
+
+# Explanation of Data and Analysis
+
+The Association of American Railroads requires that trains carrying certain loads of hazardous material, referred to as "key trains," travel no faster than 50 mph. By cross-referencing car and train tables, I identified 21,811 serial numbers marking trains operating in the U.S. that meet the [requirements for key train status](https://github.com/djnf-data-2025/declan-bradley/blob/main/references/aar-instructions.pdf). By cross referencing these train ids with rail sensor logs, I was able to identify 565 unique key trains that had been logged operating at least 5 mph above the speed limit by at least one sensor, accounting for about 2.6% of all key trains operating in the U.S. over the last two years. (An additional 5% of key trains have been logged operating between 50 and 55 mph.)
+
+<div class="flourish-embed flourish-chart" data-src="visualisation/23569369"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/23569369/thumbnail" width="100%" alt="chart visualization" /></noscript></div>
+
+I narrowed the dataset to only the 77 key trains traveling 10 mph above the limit or more. Fifty of those trains had been logged in Ohio. I found that they had all been logged by a single rail sensor, which I reverse geocoded to New Waterford, Ohio. In consulting a map, I observed, without anticipating this finding, that New Waterford neighbors East Palestine, OH, where a major derailment occurred in 2023. I checked the coordinates and found that rail sensor #255, which recorded all 50 speeding hazard trains in Ohio, is 7.6 miles from the coordinates of the East Palestine crash site. All 50 of the speeding hazard trains were operated by Norfolk Southern railways, which also operated the freight train that derailed in East Palestine. 
+
+<div class="flourish-embed flourish-table" data-src="visualisation/23591220"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/23591220/thumbnail" width="100%" alt="table visualization" /></noscript></div>
+
+
 
 # Analysis Code
 
