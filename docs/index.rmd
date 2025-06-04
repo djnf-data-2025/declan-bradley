@@ -35,7 +35,7 @@ It should be noted that this analysis is preliminary. However, if these violatio
 
 ## Surprising Findings
 
-The sheer number of cars classified as key or hazardous is striking. Even after filtering for cars not marked as empty, the data is still too large to process quickly. Additionally, many trains travel over the recommended limit. I found that certain hazardous materials tend to travel faster than others, which I have as yet no explanation for. Finally, the sheer number of key trains violating the speed limit is remarkable. It is worthy of note that 
+I did not anticipate finding a direct connection to the East Palestine crash. This result was arrived at without intent in the programming process. New Waterford appeared in the data as the most common sensor, and I did not realize until mapping it that the two were within 10 miles of one another.
 
 ## Prior Coverage
 
