@@ -177,8 +177,13 @@ danger_cars_per_train |>
 
 message('succesfully saved danger cars')
 
+danger_cars_per_train <- read_csv("declan_railstate/danger_cars.csv")
+
 key_trains <- danger_cars_per_train |>
-  filter(num_key_cars >= 5 || num_hazard_shipments >= 20)
+  filter((num_key_cars >= 5) | (num_hazard_shipments >= 20))
+
+key_trains |>
+  write.csv("data/key_trains.csv", row.names=FALSE)
 
 message('identified key trains')
 

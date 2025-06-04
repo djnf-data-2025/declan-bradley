@@ -1,7 +1,7 @@
-"speedLabel","numTrains"
-"50-55 mph",1091
-"55-60 mph",486
-"60-65 mph",63
-"65-70 mph",13
-"70-75 mph",2
-"75-80 mph",1
+"speedLabel","numTrains","percentOfUsOperating"
+"50-55 mph",1091,"5%"
+"55-60 mph",486,"2.23%"
+"60-65 mph",63,"0.29%"
+"65-70 mph",13,"0.06%"
+"70-75 mph",2,"0.01%"
+"75-80 mph",1,"0%"
