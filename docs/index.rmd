@@ -11,7 +11,7 @@ author: "Declan Bradley"
 
 ## Key Idea
 
-In 2023, a Northern Southern train derailed in East Palestine, OH, spilling toxic materials including hydrogen chloride and phosgene into the local community. Rail sensor data shows that despite the accident - which has so far cost $800 million in an ongoing cleanup effort - Northfolk Southern has continued to operate trains containing significant loads of hazardous material through East Palestine well in excess of their maximum safe speed.
+In 2023, a Norfolk Southern train derailed in East Palestine, OH, spilling toxic materials including hydrogen chloride and phosgene into the local community. Rail sensor data shows that despite the accident - which has so far cost more than $800 million in an ongoing cleanup effort - Northfolk Southern has continued to operate trains containing significant loads of hazardous material through East Palestine well in excess of their maximum safe speed.
 
 <div class="flourish-embed flourish-scatter" data-src="visualisation/23592486"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/23592486/thumbnail" width="100%" alt="scatter visualization" /></noscript></div>
 
@@ -67,7 +67,7 @@ I narrowed the dataset to only the 77 key trains traveling 10 mph above the limi
 
 <div class="flourish-embed flourish-table" data-src="visualisation/23591220"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/23591220/thumbnail" width="100%" alt="table visualization" /></noscript></div>
 
-Petroleum gas proved the most common material carried by speeding hazard trains, with 72 trains carrying a total of 2403 cars of petroleum detected traveling 10 mph or more over the safe limit. Nineteen trains carrying a collective 63 cars of hydrochloric acid, the same chemical involved in the East Palestine crash, were also detected at the same speeds.
+Petroleum gas proved the most common material carried by speeding hazard trains across the country, with 72 trains carrying a total of 2403 cars of petroleum detected traveling 10 mph or more over the safe limit. Nineteen trains carrying a collective 63 cars of hydrochloric acid, the same chemical involved in the East Palestine crash, were also detected at the same speeds.
 
 <div class="flourish-embed flourish-chart" data-src="visualisation/23598712"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/23598712/thumbnail" width="100%" alt="chart visualization" /></noscript></div>
 
