@@ -311,3 +311,71 @@ east_pal |>
   filter(excessSpeed < 10) |>
   pull(trainId) |>
   length()
+
+
+# ranking of materials
+
+major_violating_trains <- major_violators |>
+  pull(trainId) |> 
+  unique()
+
+cars_w_hazmat_classes <- railstate_table_connections$tHazmat |>
+  filter(car_hazmat_info_str != "[]") %>%
+  filter(car_hazmat_info_str != "null") %>%
+  filter(car_hazmat_info_str != '[{"placardType": null, "hazmatClass": null}]') %>%
+  filter(car_hazmat_info_str != '[{"placardType": "EMPTY", "hazmatClass": null}]') %>%
+  filter(placardType != "OTHER") %>%
+  filter(placardType != "EMPTY")
+
+cars_w_hazmat_classes <- cars_w_hazmat_classes |>
+  left_join(railstate_table_connections$tTrainSightings |>
+            select(sightingId, trainId))
+
+major_violating_cars <- cars_w_hazmat_classes |>
+  filter(trainId %in% major_violating_trains) |>
+  collect()
+
+write.csv(major_violating_cars, "data/major-violating-cars.csv", row.names=FALSE)
+
+material_counts <- major_violating_cars |>
+  group_by(placardType, hazmatClass) |>
+  summarize(num_trains = length(unique(trainId)),
+            num_cars = length(carPosition))
+
+placards_crosswalk <- read_csv(here("declan_railstate/other_data/placards_crosswalk_cfr_census_railstate.csv")) %>%
+  filter(in_railstate==TRUE) %>%
+  select(placard_type, hazmat_class_railstate, hazmat_name_cfr) 
+  
+material_counts <- material_counts |>
+  left_join(placards_crosswalk |>
+    rename(placardType = placard_type, hazmatClass=hazmat_class_railstate), by=c('placardType', 'hazmatClass'))
+
+materials_table <- material_counts |> 
+  select(hazmat_name_cfr, num_trains, num_cars) |> 
+  arrange(desc(num_trains)) |>
+  mutate(percentTrains = num_trains / length(major_violating_trains))
+
+east_pal_sightings <- railstate_table_connections$tTrainSightings |>
+  filter(sensorId == 255) |>
+  pull(sightingId) |>
+  unique()
+
+most_common_speeding_materials <- major_violating_cars |>
+  filter(sightingId %in% east_pal_sightings) |>
+  group_by(placardType, hazmatClass) |>
+  summarize(num_trains = length(unique(trainId)),
+            num_cars = length(carPosition)) |>
+  left_join(placards_crosswalk |>
+    rename(placardType = placard_type, hazmatClass=hazmat_class_railstate), by=c('placardType', 'hazmatClass')) |>
+  select(hazmat_name_cfr, num_trains, num_cars) |> 
+  arrange(desc(num_trains))
+
+materials_table |>
+  select(hazmat_name_cfr, num_trains, num_cars) |> 
+  arrange(desc(num_trains)) |>
+  head(n=10) |>
+  select(hazmat_name_cfr, num_trains, num_cars) |>
+  rename(`Hazardous Material` = hazmat_name_cfr,
+        `Train Sightings` = num_trains,
+        `Total Cars` = num_cars) |>
+  write.csv('viz/speeding-materials.csv')

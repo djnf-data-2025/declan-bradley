@@ -67,9 +67,13 @@ I narrowed the dataset to only the 77 key trains traveling 10 mph above the limi
 
 <div class="flourish-embed flourish-table" data-src="visualisation/23591220"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/23591220/thumbnail" width="100%" alt="table visualization" /></noscript></div>
 
+Petroleum gas proved the most common material carried by speeding hazard trains, with 72 trains carrying a total of 2403 cars of petroleum detected traveling 10 mph or more over the safe limit. Nineteen trains carrying a collective 63 cars of hydrochloric acid, the same chemical involved in the East Palestine crash, were also detected at the same speeds.
 
+<div class="flourish-embed flourish-chart" data-src="visualisation/23598712"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/23598712/thumbnail" width="100%" alt="chart visualization" /></noscript></div>
 
-# Analysis Code
+Limiting to the East Palestine sensor, 6 trains carrying 9 cars of hydrochloric acid have sped past the town since at 60 mph or more since the accident.
+
+## Analysis Code
 
 Code to open the database and establish its connections:
 
@@ -179,4 +183,368 @@ violators |>
 
 message('saved violators')
 
+```
+
+Limit to violators in the United States, and calculate their excess speed in a new column
+```{r eval=FALSE}
+source('scripts/load_db.R')
+library(mosaic)
+
+violators <- read_csv('data/violating-trains.csv')
+
+sensor_info <- railstate_table_connections$tSensorInfo |> 
+  select(sensorId, name, lat, lng, timezone, country, region) |>
+  rename(sensorName = name) |>
+  collect()
+
+violators <- left_join(violators, sensor_info, by='sensorId')
+
+# a bunch of these are in canada and therefore not actually illegal
+violators |>
+  group_by(country) |>
+  summarize(num_trains = length(unique(trainId))) |>
+  arrange(desc(num_trains))
+
+violators <- violators |>
+  filter(country == "United States")
+
+violators <- violators |>
+  mutate(excessSpeed = speedMph - 50)
+
+# most violators have low excesses, median 3.5 mph in excess
+favstats(violators$excessSpeed)
+```
+
+Calculate the number of key trains operating in the United States (21,811)
+```{r eval=FALSE}
+key_trains <- read_csv("data/key_trains.csv")
+
+trains_by_sensor <- railstate_table_connections$tTrainSightings |>
+  select(trainId, sensorId)
+
+sensor_countries <- railstate_table_connections$tSensorInfo |>
+  select(sensorId, country)
+
+trains_by_country <- left_join(trains_by_sensor, sensor_countries, by='sensorId')
+us_trains <- trains_by_country |> 
+  filter(country == "United States")
+
+us_train_ids <- us_trains |>
+  pull(trainId)
+
+us_key_trains <- key_trains |>
+  filter(trainId %in% us_train_ids)
+
+# there were 21811 unique key trains operating in the us in this data
+us_key_trains |>
+  pull(trainId) |>
+  unique() |>
+  length()
+```
+
+Sort the violating key trains by excess speed in bins of 5 mph each and export them for visualization
+```{r eval=FALSE}
+train_counts_by_excess <- violators |>
+  mutate(excessSpeedBinned = floor(excessSpeed / 5)) |>
+  group_by(excessSpeedBinned) |>
+  summarize(numTrains = length(unique(trainId))) |>
+  mutate(speedLabel = paste((excessSpeedBinned * 5) + 50, "-", (excessSpeedBinned * 5) + 5 + 50, " mph", sep="")) |>
+  select(speedLabel, numTrains) |>
+  mutate(percentOfUsOperating = numTrains / us_key_trains |>
+    pull(trainId) |>
+    unique() |>
+    length())
+
+train_counts_by_excess |>
+  mutate(percentOfUsOperating = round(percentOfUsOperating * 100, digits=2)) |>
+  mutate(percentOfUsOperating = paste(percentOfUsOperating, "%", sep="")) |>
+  write.csv('viz/train-counts-by-excess.csv', row.names=FALSE)
+```
+
+Limit to violators of 10 mph in excess or more, and bin them geographically
+
+```{r eval=FALSE}
+# major violations
+major_violators <- violators |>
+  filter(excessSpeed >= 10)
+
+# 50 violations by Northfolk Southern
+major_violators |> 
+  group_by(trainOperator) |>
+  summarize(num_trains = length(unique(trainId))) |>
+  arrange(desc(num_trains))
+
+major_violators <- major_violators |>
+  reverse_geocode(lat, lng, full_results=FALSE)
+
+major_violators <- major_violators |>
+  mutate(state = str_squish(str_split_i(address, ",", -3)))
+
+# only one wrong
+major_violators |>
+  filter(state %in% state.name) |>
+  dim()
+dim(major_violators)
+
+# fixed the only bad one
+major_violators[4,]$state <- str_squish(str_split_i(major_violators[4,]$address, ",", -2))
+
+```
+
+Analyze major violation cases by geography, time, and season
+```{r eval=FALSE}
+# 50 in ohio
+# that's where the east palestine accident happened!
+# starting to get somewhere here
+major_violators |>
+  group_by(state) |>
+  summarize(num_trains = length(unique(trainId)))
+
+# approximately same number of accidents, couple of repeat violators in Texas
+major_violators |>
+  group_by(state) |>
+  summarize(num_incidents = length(trainId))
+
+major_violators <- major_violators |>
+  mutate(detectionTimeSensorLocal = parse_date_time(detectionTimeSensorLocal, orders="%Y-%m-%d %H:%M:%S")) |>
+  mutate(date = date(detectionTimeSensorLocal))
+
+major_violators |>
+  count(year(date))
+
+# speeding is more common in winter
+major_violators |>
+  count(month(date))
+
+# all 50 major violators in ohio were operated by norfolk southern
+major_violators |>
+  filter(state == "Ohio") |>
+  count(trainOperator)
+
+```
+
+All 50 major violators in Ohio were operated by Norfolk Southern, which also operated the train involved in the East Palestine derailment.
+
+Isolating the Ohio violations to New Waterford.
+
+```{r eval=FALSE}
+major_violators <- major_violators |> 
+  filter(state == "Ohio") |> 
+  mutate(town = str_split_i(address, ",", 3))
+
+# all of the major violations in ohio are detected by the new waterford sensor, right outside east palestine
+# 4.6 miles, 8 minute drive
+major_violators |>
+  pull(town) |>
+  unique()
+```
+
+Exporting the Ohio violations to an interactive table for Flourish
+
+```{r eval=FALSE}
+ohio_violations_tbl <- major_violators |> 
+  filter(state == "Ohio") |> 
+  select(detectionTimeSensorLocal, trainOperator, trainId, speedMph, excessSpeed)
+
+ohio_violations_tbl <- ohio_violations_tbl |>
+  mutate(date = date(detectionTimeSensorLocal))
+
+ohio_violations_tbl$time <- ohio_violations_tbl |> 
+  pull(detectionTimeSensorLocal) |> 
+  str_split_i("T", 2) |> 
+  str_split_i("\\.", 1) |> parse_date_time(orders="%H:%M:%S")
+
+ohio_violations_tbl <- ohio_violations_tbl |>
+  mutate(date_clean = strftime(date, "%b %d, %Y")) |>
+  mutate(time_clean = strftime(time, "%H:%M %p"))
+
+ohio_violations_tbl <- ohio_violations_tbl |> 
+  arrange(desc(speedMph)) |>
+  select(date_clean, time_clean, speedMph, trainOperator) |>
+  mutate(trainOperator = gsub("NS", "Norfolk Southern", trainOperator)) |>
+  rename(Date = date_clean) |>
+  rename(`Local Time` = time_clean) |>
+  rename(`Speed mph` = speedMph) |>
+  rename(`Train Operator` = trainOperator)
+
+ohio_violations_tbl |>
+  write.csv('viz/east_palestine-viols.csv', row.names=FALSE)
+
+```
+
+Isolating any train that passed the East Palestine sensor (#255).
+
+```{r eval=FALSE}
+# let's look at the east palestine sensor in summary
+# the sensor has id 255
+major_violators |> 
+  pull(sensorId) |>
+  unique()
+
+sensor_255_info <- railstate_table_connections$tSensorInfo |> 
+  filter(sensorId == 255)
+
+#this sensor is only 7 miles from the accident site
+# wikipedia, NEEDS to be checked but fine for preliminary since data confirms approximate location https://en.wikipedia.org/wiki/East_Palestine,_Ohio,_train_derailment
+sensor_255_info
+
+east_palestine_sightings <- railstate_table_connections$tTrainSightings |>
+  filter(sensorId == 255) |>
+  select(sightingId, trainId, detectionTimeSensorLocal, direction, trainType, speedMph, trainOperator, estGallonageCapacity, estLengthFeet, warnings, issues)
+
+east_palestine_sightings |>
+  write.csv("data/east-palestine-sightings.csv", row.names=FALSE)
+```
+
+Analyzing trains that passed the East Palestine sensor (#255), to find out how many of them were key, and how many operating in excess of safe limits.
+
+```{r eval=FALSE}
+east_pal <- read_csv('data/east-palestine-sightings.csv')
+
+east_pal <- east_pal |>
+  filter(trainId %in% key_trains$trainId)
+
+# there have been 457 key trains passing by east pal
+dim(east_pal)
+
+east_pal <- east_pal |>
+  mutate(excessSpeed = speedMph - 50)
+
+# 10% of all key train sightings in east palestine are speeding by 10 mph or more
+east_pal |> 
+  filter(excessSpeed >= 10) |>
+  pull(trainId) |>
+  length() / east_pal |> 
+    pull(trainId) |>
+    length()
+
+# ns is the only company operating hazard trains near east pal
+east_pal |>
+  group_by(trainOperator) |>
+  summarize(numSightings = length(trainId))
+
+# all 50 of the speeding hazard trains are ns operated
+east_pal |>
+  filter(excessSpeed >= 10) |>
+  group_by(trainOperator) |>
+  summarize(numSightings = length(trainId))
+```
+
+Clean up the East Palestine data and export it to csv for visualization in Flourish. Also calculate fast stats for the chart captions.
+
+```{r eval=FALSE}
+east_pal <- east_pal |>
+  mutate(date = str_split_i(detectionTimeSensorLocal, "T", 1)) |>
+  mutate(date = parse_date_time(date, orders="%Y-%m-%d")) |>
+  mutate(time = detectionTimeSensorLocal |>
+    str_split_i("T", 2) |> 
+    str_split_i("\\.", 1) |> 
+    parse_date_time(orders="%H:%M:%S"))
+
+# almost all speeders are eastbound
+east_pal |> 
+  filter(excessSpeed >= 10) |> 
+  group_by(direction) |> 
+  summarize(speeders = length(trainId))
+
+# but key trains in general are more likely to westbound, making this disproprortion particularly striking
+east_pal |> 
+  count(direction)
+
+# all speeding key trains are manifest trains
+east_pal |> 
+  filter(excessSpeed >= 10) |> 
+  count(trainType)
+
+east_pal_viz <- east_pal |>
+  arrange(detectionTimeSensorLocal) |>
+  select(detectionTimeSensorLocal, date, time, speedMph, excessSpeed, trainId) |>
+  mutate(`Speed Limit` = case_when(
+    excessSpeed >= 10 ~ "Severe Violations of Safety Codes",
+    excessSpeed < 10 & excessSpeed > 0 ~ "Minor Violations",
+    TRUE ~ "Operating Within Limits"
+  )) |>
+  mutate(`Local Time` = strftime(time, "%H:%M %p")) |>
+  select(!time)
+
+east_pal_viz |>
+  rename(`Date & Time` = detectionTimeSensorLocal,
+        Date = date,
+        `Speed mph` = speedMph) |>
+  mutate(Location = "East Palestine, OH") |>
+  write.csv("viz/east-pal_lollipops.csv", row.names=FALSE)
+
+east_pal |>
+  filter(excessSpeed > 0) |>
+  filter(excessSpeed < 10) |>
+  pull(trainId) |>
+  length()
+
+```
+Counting up the most common speeding materials
+```{r eval=FALSE}
+major_violating_trains <- major_violators |>
+  pull(trainId) |> 
+  unique()
+
+cars_w_hazmat_classes <- railstate_table_connections$tHazmat |>
+  filter(car_hazmat_info_str != "[]") %>%
+  filter(car_hazmat_info_str != "null") %>%
+  filter(car_hazmat_info_str != '[{"placardType": null, "hazmatClass": null}]') %>%
+  filter(car_hazmat_info_str != '[{"placardType": "EMPTY", "hazmatClass": null}]') %>%
+  filter(placardType != "OTHER") %>%
+  filter(placardType != "EMPTY")
+
+cars_w_hazmat_classes <- cars_w_hazmat_classes |>
+  left_join(railstate_table_connections$tTrainSightings |>
+            select(sightingId, trainId))
+
+major_violating_cars <- cars_w_hazmat_classes |>
+  filter(trainId %in% major_violating_trains) |>
+  collect()
+
+write.csv(major_violating_cars, "data/major-violating-cars.csv", row.names=FALSE)
+
+material_counts <- major_violating_cars |>
+  group_by(placardType, hazmatClass) |>
+  summarize(num_trains = length(unique(trainId)),
+            num_cars = length(carPosition))
+
+placards_crosswalk <- read_csv(here("declan_railstate/other_data/placards_crosswalk_cfr_census_railstate.csv")) %>%
+  filter(in_railstate==TRUE) %>%
+  select(placard_type, hazmat_class_railstate, hazmat_name_cfr) 
+  
+material_counts <- material_counts |>
+  left_join(placards_crosswalk |>
+    rename(placardType = placard_type, hazmatClass=hazmat_class_railstate), by=c('placardType', 'hazmatClass'))
+
+materials_table <- material_counts |> 
+  select(hazmat_name_cfr, num_trains, num_cars) |> 
+  arrange(desc(num_trains)) |>
+  mutate(percentTrains = num_trains / length(major_violating_trains))
+
+east_pal_sightings <- railstate_table_connections$tTrainSightings |>
+  filter(sensorId == 255) |>
+  pull(sightingId) |>
+  unique()
+
+most_common_speeding_materials <- major_violating_cars |>
+  filter(sightingId %in% east_pal_sightings) |>
+  group_by(placardType, hazmatClass) |>
+  summarize(num_trains = length(unique(trainId)),
+            num_cars = length(carPosition)) |>
+  left_join(placards_crosswalk |>
+    rename(placardType = placard_type, hazmatClass=hazmat_class_railstate), by=c('placardType', 'hazmatClass')) |>
+  select(hazmat_name_cfr, num_trains, num_cars) |> 
+  arrange(desc(num_trains))
+
+materials_table |>
+  select(hazmat_name_cfr, num_trains, num_cars) |> 
+  arrange(desc(num_trains)) |>
+  head(n=10) |>
+  select(hazmat_name_cfr, num_trains, num_cars) |>
+  rename(`Hazardous Material` = hazmat_name_cfr,
+        `Train Sightings` = num_trains,
+        `Total Cars` = num_cars) |>
+  write.csv('viz/speeding-materials.csv')
 ```
