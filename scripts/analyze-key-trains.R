@@ -379,3 +379,41 @@ materials_table |>
         `Train Sightings` = num_trains,
         `Total Cars` = num_cars) |>
   write.csv('viz/speeding-materials.csv')
+
+# verify that these are definitely harzard trains at the time of interception
+east_pal_sightings <- railstate_table_connections$tHazmat |>
+  left_join(railstate_table_connections$tTrainSightings |> 
+    select(sightingId, sensorId), by='sightingId') |>
+  filter(sensorId == 255)
+
+east_pal_sightings <- east_pal_sightings |>
+  left_join(railstate_table_connections$tCars |>
+    select(sightingId, carPosition, type, isLoaded),
+    by=c('sightingId', 'carPosition'))
+
+east_pal_sightings <- east_pal_sightings |>
+  mutate(key_car = case_when(
+    ((placardType %in% c("UN1005", "UN3318")) | (hazmatClass %in% c(6.1))) & (type == "Tank Car") & (is.na(isLoaded) || (isLoaded == 1)) ~ TRUE,
+    TRUE ~ FALSE
+  )) |>
+  mutate(hazard_shipment = case_when(
+    ((placardType %in% c("UN1005", "UN3318")) | (hazmatClass %in% c(2.1, 1.1, 1.2, 6.1))) & (is.na(isLoaded) | (isLoaded == 1)) ~ TRUE,
+    TRUE ~ FALSE
+  ))
+
+east_pal_sightings <- east_pal_sightings |>
+  group_by(sightingId) |>
+  summarize(num_key_cars = sum(key_car), num_hazard_shipments = sum(hazard_shipment))
+
+east_pal_sightings <- east_pal_sightings |>
+  mutate(is_key_train = ((num_key_cars >= 5) | (num_hazard_shipments >= 20)))
+
+write.csv(east_pal_sightings, "data/east-pal_by_sightingId.csv", row.names=FALSE)
+
+east_pal_sightings <- read_csv('data/east-pal_by_sightingId.csv')
+
+east_pal_sightings <- east_pal_sightings |>
+  left_join(railstate_table_connections$tTrainSightings |>
+            filter(sensorId) |>
+            select(sightingId, speedMph) |>
+            collect(), by='sightingId')
