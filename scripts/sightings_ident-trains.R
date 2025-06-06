@@ -27,7 +27,9 @@ df <- df |>
 df <- df |>
   mutate(is_key_train = ((num_key_cars >= 5) | (num_hazard_shipments >= 20)))
 
-write.csv(df, "data/east-pal_by_sightingId.csv", row.names=FALSE)
+write.csv(df, "data/sighting-id_train-car-counts.csv.csv", row.names=FALSE)
+
+df <- read_csv("data/sighting-id_train-car-counts.csv.csv")
 
 df <- df |>
   left_join(railstate_table_connections$tTrainSightings |>
