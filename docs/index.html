@@ -9,7 +9,7 @@
 <meta name="author" content="Declan Bradley">
 <meta name="dcterms.date" content="2025-06-02">
 
-<title>Declan Bradley - Railstate Pitch</title>
+<title>Safety Last - Speeding Hazard Trains Detected Across United States</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -110,7 +110,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Declan Bradley - Railstate Pitch</h1>
+<h1 class="title">Safety Last - Speeding Hazard Trains Detected Across United States</h1>
 </div>
 
 
@@ -142,7 +142,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1>Story Pitch</h1>
 <section id="key-idea" class="level2">
 <h2 class="anchored" data-anchor-id="key-idea">Key Idea</h2>
-<p>In 2023, a Northern Southern train derailed in East Palestine, OH, spilling toxic materials including hydrogen chloride and phosgene into the local community. Rail sensor data shows that despite the accident - which has so far cost $800 million in an ongoing cleanup effort - Northfolk Southern has continued to operate trains containing significant loads of hazardous material through East Palestine well in excess of their maximum safe speed.</p>
+<p>In 2023, a Norfolk Southern train derailed in East Palestine, OH, spilling toxic materials including hydrogen chloride and phosgene into the local community. Rail sensor data shows that despite the accident - which has so far cost more than $800 million in an ongoing cleanup effort - Northfolk Southern has continued to operate trains containing significant loads of hazardous material through East Palestine well in excess of their maximum safe speed.</p>
 <div class="flourish-embed flourish-scatter" data-src="visualisation/23592486">
 <script src="https://public.flourish.studio/resources/embed.js"></script>
 <noscript>
@@ -173,10 +173,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <section id="surprising-findings" class="level2">
 <h2 class="anchored" data-anchor-id="surprising-findings">Surprising Findings</h2>
 <p>I did not anticipate finding a direct connection to the East Palestine crash. This result was arrived at without intent in the programming process. New Waterford appeared in the data as the most common sensor, and I did not realize until mapping it that the two were within 10 miles of one another.</p>
+<div class="flourish-embed flourish-table" data-src="visualisation/23591220">
+<script src="https://public.flourish.studio/resources/embed.js"></script>
+<noscript>
+<img src="https://public.flourish.studio/visualisation/23591220/thumbnail" width="100%" alt="table visualization">
+</noscript>
+</div>
 </section>
 <section id="prior-coverage" class="level2">
 <h2 class="anchored" data-anchor-id="prior-coverage">Prior Coverage</h2>
-<p>In February 2023, a train derailment in East Palestine, OH, spilled hazardous materials including vinyl chloride into the surrounding land. The crash devastated the local community, and an ongoing cleanup effort has so far cost more than $800 million, according to <a href="https://www.npr.org/2024/02/05/1228772709/east-palestine-train-derailment-norfolk-southern-lawsuit-epa">NPR reporting</a>.</p>
+<p>In February 2023, a train derailment in East Palestine, OH, spilled hazardous materials including vinyl chloride into the surrounding land. The crash devastated the local community, and an ongoing cleanup effort has so far cost more than $800 million, according to <a href="https://www.npr.org/2024/02/05/1228772709/east-palestine-train-derailment-norfolk-southern-lawsuit-epa">NPR reporting</a>. The Howard Center for Data Journalism has also previously covered the crash and its impact on the residents of East Palestine:</p>
+<ul>
+<li><a href="https://cnsmaryland.org/2025/02/03/health-environmental-concerns-divide-east-palestine-two-years-after-train-derailment-toxic-fire/">Health, environmental concerns divide East Palestine two years after train derailment, toxic fire</a></li>
+<li><a href="https://cnsmaryland.org/2025/02/02/two-years-after-derailment-trains-with-toxic-chemicals-still-roll-through-east-palestine/">Two years after derailment, trains with toxic chemicals still roll through East Palestine</a></li>
+</ul>
 </section>
 <section id="visuals" class="level2">
 <h2 class="anchored" data-anchor-id="visuals">Visuals</h2>
@@ -196,20 +206,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <section id="explanation-of-data-and-analysis" class="level1">
 <h1>Explanation of Data and Analysis</h1>
 <p>The Association of American Railroads requires that trains carrying certain loads of hazardous material, referred to as “key trains,” travel no faster than 50 mph. By cross-referencing car and train tables, I identified 21,811 serial numbers marking trains operating in the U.S. that meet the <a href="https://github.com/djnf-data-2025/declan-bradley/blob/main/references/aar-instructions.pdf">requirements for key train status</a>. By cross referencing these train ids with rail sensor logs, I was able to identify 565 unique key trains that had been logged operating at least 5 mph above the speed limit by at least one sensor, accounting for about 2.6% of all key trains operating in the U.S. over the last two years. (An additional 5% of key trains have been logged operating between 50 and 55 mph.)</p>
-<div class="flourish-embed flourish-chart" data-src="visualisation/23569369">
-<script src="https://public.flourish.studio/resources/embed.js"></script>
-<noscript>
-<img src="https://public.flourish.studio/visualisation/23569369/thumbnail" width="100%" alt="chart visualization">
-</noscript>
-</div>
 <p>I narrowed the dataset to only the 77 key trains traveling 10 mph above the limit or more. Fifty of those trains had been logged in Ohio. I found that they had all been logged by a single rail sensor, which I reverse geocoded to New Waterford, Ohio. In consulting a map, I observed, without anticipating this finding, that New Waterford neighbors East Palestine, OH, where a major derailment occurred in 2023. I checked the coordinates and found that rail sensor #255, which recorded all 50 speeding hazard trains in Ohio, is 7.6 miles from the coordinates of the East Palestine crash site. All 50 of the speeding hazard trains were operated by Norfolk Southern railways, which also operated the freight train that derailed in East Palestine.</p>
-<div class="flourish-embed flourish-table" data-src="visualisation/23591220">
+<p>Petroleum gas proved the most common material carried by speeding hazard trains across the country, with 72 trains carrying a total of 2403 cars of petroleum detected traveling 10 mph or more over the safe limit. Nineteen trains carrying a collective 63 cars of hydrochloric acid, the same chemical involved in the East Palestine crash, were also detected at the same speeds.</p>
+<div class="flourish-embed flourish-chart" data-src="visualisation/23598712">
 <script src="https://public.flourish.studio/resources/embed.js"></script>
 <noscript>
-<img src="https://public.flourish.studio/visualisation/23591220/thumbnail" width="100%" alt="table visualization">
+<img src="https://public.flourish.studio/visualisation/23598712/thumbnail" width="100%" alt="chart visualization">
 </noscript>
 </div>
-<p>Petroleum gas proved the most common material carried by speeding hazard trains, with 72 trains carrying a total of 2403 cars of petroleum detected traveling 10 mph or more over the safe limit. Nineteen trains carrying a collective 63 cars of hydrochloric acid, the same chemical involved in the East Palestine crash, were also detected at the same speeds.</p>
 <p>Limiting to the East Palestine sensor, 6 trains carrying 9 cars of hydrochloric acid have sped past the town since at 60 mph or more since the accident.</p>
 <section id="analysis-code" class="level2">
 <h2 class="anchored" data-anchor-id="analysis-code">Analysis Code</h2>
@@ -649,13 +653,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hazmat_name_cfr, num_trains, num_cars) <span class="sc">|&gt;</span> </span>
 <span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(num_trains))</span>
 <span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>most_common_speeding_materials <span class="sc">|&gt;</span></span>
-<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>() <span class="sc">|&gt;</span></span>
-<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hazmat_name_cfr, num_trains, num_cars) <span class="sc">|&gt;</span></span>
-<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">Hazardous Material</span><span class="st">`</span> <span class="ot">=</span> hazmat_name_cfr,</span>
-<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">Train Sightings</span><span class="st">`</span> <span class="ot">=</span> num_trains,</span>
-<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">Total Cars</span><span class="st">`</span> <span class="ot">=</span> num_cars) <span class="sc">|&gt;</span></span>
-<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write.csv</span>(<span class="st">'viz/speeding-materials.csv'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>materials_table <span class="sc">|&gt;</span></span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hazmat_name_cfr, num_trains, num_cars) <span class="sc">|&gt;</span> </span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(num_trains)) <span class="sc">|&gt;</span></span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n=</span><span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hazmat_name_cfr, num_trains, num_cars) <span class="sc">|&gt;</span></span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">Hazardous Material</span><span class="st">`</span> <span class="ot">=</span> hazmat_name_cfr,</span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">Train Sightings</span><span class="st">`</span> <span class="ot">=</span> num_trains,</span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">Total Cars</span><span class="st">`</span> <span class="ot">=</span> num_cars) <span class="sc">|&gt;</span></span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write.csv</span>(<span class="st">'viz/speeding-materials.csv'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>

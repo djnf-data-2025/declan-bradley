@@ -1,5 +1,5 @@
 ---
-title: "Declan Bradley - Railstate Pitch"
+title: "Safety Last - Speeding Hazard Trains Detected Across United States"
 output: html_document
 date: "2025-06-02"
 author: "Declan Bradley"
@@ -37,9 +37,14 @@ It should be noted that this analysis is preliminary. However, if these violatio
 
 I did not anticipate finding a direct connection to the East Palestine crash. This result was arrived at without intent in the programming process. New Waterford appeared in the data as the most common sensor, and I did not realize until mapping it that the two were within 10 miles of one another.
 
+<div class="flourish-embed flourish-table" data-src="visualisation/23591220"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/23591220/thumbnail" width="100%" alt="table visualization" /></noscript></div>
+
 ## Prior Coverage
 
-In February 2023, a train derailment in East Palestine, OH, spilled hazardous materials including vinyl chloride into the surrounding land. The crash devastated the local community, and an ongoing cleanup effort has so far cost more than \$800 million, according to [NPR reporting](https://www.npr.org/2024/02/05/1228772709/east-palestine-train-derailment-norfolk-southern-lawsuit-epa).
+In February 2023, a train derailment in East Palestine, OH, spilled hazardous materials including vinyl chloride into the surrounding land. The crash devastated the local community, and an ongoing cleanup effort has so far cost more than \$800 million, according to [NPR reporting](https://www.npr.org/2024/02/05/1228772709/east-palestine-train-derailment-norfolk-southern-lawsuit-epa). The Howard Center for Data Journalism has also previously covered the crash and its impact on the residents of East Palestine:
+
+- [Health, environmental concerns divide East Palestine two years after train derailment, toxic fire](https://cnsmaryland.org/2025/02/03/health-environmental-concerns-divide-east-palestine-two-years-after-train-derailment-toxic-fire/)
+- [Two years after derailment, trains with toxic chemicals still roll through East Palestine](https://cnsmaryland.org/2025/02/02/two-years-after-derailment-trains-with-toxic-chemicals-still-roll-through-east-palestine/)
 
 ## Visuals
 
@@ -61,11 +66,7 @@ The data is readily available, but analysis will take time. The most time consum
 
 The Association of American Railroads requires that trains carrying certain loads of hazardous material, referred to as "key trains," travel no faster than 50 mph. By cross-referencing car and train tables, I identified 21,811 serial numbers marking trains operating in the U.S. that meet the [requirements for key train status](https://github.com/djnf-data-2025/declan-bradley/blob/main/references/aar-instructions.pdf). By cross referencing these train ids with rail sensor logs, I was able to identify 565 unique key trains that had been logged operating at least 5 mph above the speed limit by at least one sensor, accounting for about 2.6% of all key trains operating in the U.S. over the last two years. (An additional 5% of key trains have been logged operating between 50 and 55 mph.)
 
-<div class="flourish-embed flourish-chart" data-src="visualisation/23569369"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/23569369/thumbnail" width="100%" alt="chart visualization" /></noscript></div>
-
 I narrowed the dataset to only the 77 key trains traveling 10 mph above the limit or more. Fifty of those trains had been logged in Ohio. I found that they had all been logged by a single rail sensor, which I reverse geocoded to New Waterford, Ohio. In consulting a map, I observed, without anticipating this finding, that New Waterford neighbors East Palestine, OH, where a major derailment occurred in 2023. I checked the coordinates and found that rail sensor #255, which recorded all 50 speeding hazard trains in Ohio, is 7.6 miles from the coordinates of the East Palestine crash site. All 50 of the speeding hazard trains were operated by Norfolk Southern railways, which also operated the freight train that derailed in East Palestine. 
-
-<div class="flourish-embed flourish-table" data-src="visualisation/23591220"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/23591220/thumbnail" width="100%" alt="table visualization" /></noscript></div>
 
 Petroleum gas proved the most common material carried by speeding hazard trains across the country, with 72 trains carrying a total of 2403 cars of petroleum detected traveling 10 mph or more over the safe limit. Nineteen trains carrying a collective 63 cars of hydrochloric acid, the same chemical involved in the East Palestine crash, were also detected at the same speeds.
 
